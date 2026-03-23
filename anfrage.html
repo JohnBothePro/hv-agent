@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anfrage an Hausverwaltung</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;box-shadow:0 2px 20px rgba(0,0,0,.06);max-width:520px;width:100%;padding:32px;border:1px solid #d2d2d7}
+.logo{font-size:28px;font-weight:700;text-align:center;margin-bottom:4px;color:#1d1d1f}
+.sub{text-align:center;color:#86868b;font-size:14px;margin-bottom:28px}
+label{display:block;font-size:13px;font-weight:600;color:#86868b;margin-bottom:6px;margin-top:16px}
+input,textarea,select{width:100%;padding:14px;border:1px solid #d2d2d7;border-radius:12px;font-size:15px;font-family:inherit;outline:none;background:#fff;color:#1d1d1f}
+input:focus,textarea:focus,select:focus{border-color:#0071e3}
+input::placeholder,textarea::placeholder{color:#86868b}
+textarea{resize:none;min-height:120px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.notfall-box{display:flex;align-items:center;justify-content:space-between;padding:14px;border:1px solid #d2d2d7;border-radius:12px;margin-top:16px;background:#fff}
+.notfall-label{font-size:14px;font-weight:600;color:#ff3b30}
+.notfall-sub{font-size:12px;color:#86868b;margin-top:2px}
+.toggle{width:44px;height:26px;background:#e8e8ed;border-radius:13px;position:relative;cursor:pointer;border:none;flex-shrink:0}
+.toggle.on{background:#ff3b30}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(18px)}
+.btn{width:100%;padding:16px;background:#0071e3;border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;margin-top:24px;transition:opacity .2s}
+.btn:hover{opacity:.9}.btn:active{opacity:.7}.btn:disabled{opacity:.4;cursor:not-allowed}
+.success{text-align:center;padding:40px 20px}
+.success-icon{font-size:64px;margin-bottom:16px}
+.success-title{font-size:22px;font-weight:700;margin-bottom:8px;color:#34c759}
+.success-text{color:#86868b;font-size:14px;line-height:1.6}
+.error{color:#ff3b30;font-size:13px;text-align:center;margin-top:12px;min-height:20px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form-view">
+    <div class="logo">📋 Neue Anfrage</div>
+    <div class="sub">Hausverwaltung Grund und Grün</div>
+    <div class="row2">
+      <div><label>Ihr Name *</label><input id="a-name" placeholder="Max Mustermann"></div>
+      <div><label>E-Mail *</label><input id="a-email" type="email" placeholder="max@email.de"></div>
+    </div>
+    <label>Wohnung / Adresse *</label>
+    <input id="a-wohnung" placeholder="Musterstr. 1, 2. OG links">
+    <label>Ihr Anliegen *</label>
+    <textarea id="a-text" placeholder="Beschreiben Sie Ihr Anliegen möglichst genau…"></textarea>
+    <div class="notfall-box">
+      <div><div class="notfall-label">🚨 Notfall</div><div class="notfall-sub">Sofortige Bearbeitung nötig</div></div>
+      <button class="toggle" id="a-notfall" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <button class="btn" onclick="absenden()">Anfrage absenden</button>
+    <div class="error" id="error"></div>
+  </div>
+  <div id="success-view" class="hidden">
+    <div class="success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Anfrage erhalten!</div>
+      <div class="success-text">Vielen Dank. Ihre Anfrage wurde erfolgreich übermittelt.<br>Wir melden uns schnellstmöglich bei Ihnen.<br><br>Sie können dieses Fenster jetzt schließen.</div>
+    </div>
+  </div>
+</div>
+<script>
+const NPOINT_URL = 'https://api.npoint.io/77e4607f511dc4946245';
+async function absenden(){
+  const name=document.getElementById('a-name').value.trim();
+  const email=document.getElementById('a-email').value.trim();
+  const wohnung=document.getElementById('a-wohnung').value.trim();
+  const text=document.getElementById('a-text').value.trim();
+  const notfall=document.getElementById('a-notfall').classList.contains('on');
+  const err=document.getElementById('error');
+  if(!name||!email||!wohnung||!text){err.textContent='Bitte alle Pflichtfelder ausfüllen.';return}
+  err.textContent='';
+  try{
+    const res=await fetch(NPOINT_URL);const existing=await res.json();
+    const arr=Array.isArray(existing)?existing:[];
+    arr.push({
+      id:'eingang-'+Date.now(),
+      typ:'neue_anfrage',
+      zeit:new Date().toLocaleString('de-DE',{timeZone:'Europe/Berlin'}),
+      name,email,wohnung,nachricht:text,notfall
+    });
+    await fetch(NPOINT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr.slice(-50))});
+    document.getElementById('form-view').classList.add('hidden');
+    document.getElementById('success-view').classList.remove('hidden');
+  }catch(e){err.textContent='Fehler beim Senden. Bitte erneut versuchen.'}
+}
+</script>
+</body>
+</html>
