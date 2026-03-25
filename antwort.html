@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rückmeldung – Hausverwaltung</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.08);max-width:520px;width:100%;padding:32px;border:1px solid #d2d2d7}
+.logo{font-size:28px;font-weight:800;text-align:center;margin-bottom:4px;color:#0071e3}
+.sub{text-align:center;color:#86868b;font-size:14px;margin-bottom:24px}
+.ticket-info{background:#f0f0f2;border:1px solid #d2d2d7;border-radius:14px;padding:16px;margin-bottom:24px}
+.ticket-code{font-size:13px;font-weight:700;color:#0071e3;letter-spacing:.05em}
+.ticket-subject{font-size:15px;font-weight:600;margin-top:4px}
+.hw-info{font-size:12px;color:#86868b;margin-top:4px}
+label{display:block;font-size:13px;font-weight:600;color:#86868b;margin-bottom:6px;margin-top:16px}
+select,textarea,input[type=text]{width:100%;padding:14px;border:1px solid #d2d2d7;border-radius:12px;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;background:#fff}
+select:focus,textarea:focus,input[type=text]:focus{border-color:#0071e3}
+textarea{resize:none;min-height:100px}
+.section-title{font-size:12px;font-weight:700;letter-spacing:.06em;color:#0071e3;text-transform:uppercase;margin:20px 0 10px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.opt-btn{padding:16px 12px;border:2px solid #d2d2d7;border-radius:14px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;background:#fff;line-height:1.4}
+.opt-btn:hover{border-color:#0071e3;background:#f0f5ff}
+.opt-btn.selected{border-color:#0071e3;background:#e8f0fe;color:#0071e3}
+.opt-btn .opt-icon{font-size:24px;display:block;margin-bottom:6px}
+.opt-btn .opt-label{font-size:12px;color:#86868b;font-weight:400;margin-top:2px}
+.status-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.status-opt{padding:12px 10px;border:2px solid #d2d2d7;border-radius:12px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
+.status-opt:hover{border-color:#0071e3;background:#f0f5ff}
+.status-opt.selected{border-color:#0071e3;background:#e8f0fe;color:#0071e3}
+.angebot-fields{background:#f0f0f2;border:1px solid #d2d2d7;border-radius:14px;padding:16px;margin-top:12px}
+.angebot-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.angebot-row:last-child{margin-bottom:0}
+.angebot-row label{margin:0 0 4px}
+.angebot-row input{padding:10px;font-size:14px}
+.foto-area{margin-top:16px}
+.foto-upload-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:2px dashed #d2d2d7;border-radius:14px;background:#fafafa;cursor:pointer;font-size:14px;font-weight:600;color:#86868b;transition:all .15s}
+.foto-upload-btn:hover{border-color:#0071e3;color:#0071e3;background:#f0f5ff}
+.foto-upload-btn input{display:none}
+.foto-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.foto-thumb{position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:1px solid #d2d2d7}
+.foto-thumb img{width:100%;height:100%;object-fit:cover}
+.foto-thumb .foto-del{position:absolute;top:2px;right:2px;width:22px;height:22px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.foto-count{font-size:11px;color:#86868b;margin-top:4px}
+.btn{width:100%;padding:16px;background:#0071e3;border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;margin-top:20px;transition:opacity .2s}
+.btn:hover{opacity:.9}.btn:active{opacity:.7}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.success{text-align:center;padding:40px 20px}
+.success-icon{font-size:64px;margin-bottom:16px}
+.success-title{font-size:22px;font-weight:700;margin-bottom:8px;color:#34c759}
+.success-text{color:#86868b;font-size:14px;line-height:1.6}
+.error{color:#ff3b30;font-size:13px;text-align:center;margin-top:12px;min-height:20px}
+.hidden{display:none}
+.opt-detail{margin-top:16px;padding-top:16px;border-top:1px solid #d2d2d7}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form-view">
+    <div class="logo">Rückmeldung</div>
+    <div class="sub">Hausverwaltung</div>
+    <div class="ticket-info">
+      <div class="ticket-code" id="display-code">Ticket wird geladen…</div>
+      <div class="ticket-subject" id="display-subject"></div>
+      <div class="hw-info" id="display-hw"></div>
+    </div>
+    <div id="phase-optionen">
+      <div class="section-title">Was ist das Ergebnis?</div>
+      <div class="options">
+        <div class="opt-btn" onclick="selectOption('behoben',this)"><span class="opt-icon">✅</span>Schaden behoben<span class="opt-label">Mangel wurde beseitigt</span></div>
+        <div class="opt-btn" onclick="selectOption('angebot',this)"><span class="opt-icon">💰</span>Angebot<span class="opt-label">Kostenvoranschlag</span></div>
+        <div class="opt-btn" onclick="selectOption('handwerker',this)"><span class="opt-icon">🔧</span>Handwerker nötig<span class="opt-label">Fachfirma erforderlich</span></div>
+        <div class="opt-btn" onclick="selectOption('nachricht',this)"><span class="opt-icon">💬</span>Nachricht<span class="opt-label">Sonstige Rückmeldung</span></div>
+      </div>
+      <div class="opt-detail hidden" id="detail-behoben">
+        <label>Was wurde gemacht?</label>
+        <textarea id="txt-behoben" placeholder="Kurze Beschreibung der Reparatur…"></textarea>
+      </div>
+      <div class="opt-detail hidden" id="detail-angebot">
+        <label>Angebotsbeschreibung</label>
+        <textarea id="txt-angebot" placeholder="Was muss gemacht werden? Welches Material?"></textarea>
+        <div class="angebot-fields" style="margin-top:12px">
+          <div class="angebot-row"><div><label>Materialkosten (€)</label><input type="text" id="angebot-material" placeholder="z.B. 150"></div><div><label>Arbeitskosten (€)</label><input type="text" id="angebot-arbeit" placeholder="z.B. 200"></div></div>
+          <div class="angebot-row"><div><label>Geschätzte Dauer</label><input type="text" id="angebot-dauer" placeholder="z.B. 2 Stunden"></div><div><label>Gesamtbetrag (€)</label><input type="text" id="angebot-gesamt" placeholder="z.B. 350"></div></div>
+        </div>
+      </div>
+      <div class="opt-detail hidden" id="detail-handwerker">
+        <label>Welches Gewerk wird benötigt?</label>
+        <select id="hw-gewerk"><option value="">Bitte wählen…</option><option value="sanitaer">🚿 Sanitär</option><option value="elektro">⚡ Elektro</option><option value="heizung">🔥 Heizung</option><option value="maler">🎨 Maler</option><option value="schreiner">🪚 Schreiner</option><option value="schlosser">🔑 Schlüsseldienst</option><option value="dach">🏠 Dach / Fassade</option><option value="allgemein">🔧 Sonstiges</option></select>
+        <label>Beschreibung für den Handwerker</label>
+        <textarea id="txt-handwerker" placeholder="Was genau muss der Handwerker machen?"></textarea>
+      </div>
+      <div class="opt-detail hidden" id="detail-nachricht">
+        <label>Status</label>
+        <div class="status-row">
+          <div class="status-opt" onclick="selectSubStatus('angenommen',this)">✅ Angenommen</div>
+          <div class="status-opt" onclick="selectSubStatus('termin',this)">📅 Termin</div>
+          <div class="status-opt" onclick="selectSubStatus('problem',this)">⚠️ Problem</div>
+          <div class="status-opt" onclick="selectSubStatus('info',this)">💬 Info</div>
+        </div>
+        <label>Nachricht</label>
+        <textarea id="txt-nachricht" placeholder="Ihre Nachricht…"></textarea>
+      </div>
+    </div>
+    <div class="foto-area">
+      <div class="section-title">📷 Fotos (optional, max. 3)</div>
+      <label class="foto-upload-btn" id="foto-btn">📷 Foto aufnehmen oder auswählen<input type="file" accept="image/*" capture="environment" multiple onchange="handleFotos(event)"></label>
+      <div class="foto-preview" id="foto-preview"></div>
+      <div class="foto-count" id="foto-count"></div>
+    </div>
+    <button class="btn" id="send-btn" onclick="senden()">📤 Rückmeldung absenden</button>
+    <div class="error" id="error"></div>
+  </div>
+  <div id="success-view" class="hidden">
+    <div class="success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Vielen Dank!</div>
+      <div class="success-text">Ihre Rückmeldung wurde erfolgreich übermittelt.<br>Die Hausverwaltung wurde automatisch informiert.<br><br>Sie können dieses Fenster jetzt schließen.</div>
+    </div>
+  </div>
+</div>
+<script>
+const NPOINT_URL='https://api.npoint.io/77e4607f511dc4946245';
+const MAX_FOTOS=3;
+const params=new URLSearchParams(window.location.search);
+const ticketCode=params.get('code')||'Unbekannt';
+const ticketSubject=decodeURIComponent(params.get('subject')||'Auftrag');
+const hwName=decodeURIComponent(params.get('name')||'');
+const hwEmail=decodeURIComponent(params.get('email')||'');
+const vonTyp=params.get('von')||'handwerker';
+document.getElementById('display-code').textContent=ticketCode;
+document.getElementById('display-subject').textContent=ticketSubject;
+document.getElementById('display-hw').textContent=hwName?(vonTyp==='mieter'?'Mieter: ':'Dienstleister: ')+hwName:'';
+let selectedOption='',subStatus='',fotos=[];
+
+function selectOption(opt,el){
+  selectedOption=opt;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  ['behoben','angebot','handwerker','nachricht'].forEach(id=>document.getElementById('detail-'+id).classList.toggle('hidden',id!==opt));
+}
+function selectSubStatus(s,el){
+  subStatus=s;
+  document.querySelectorAll('.status-opt').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function handleFotos(e){
+  const files=Array.from(e.target.files);
+  if(fotos.length+files.length>MAX_FOTOS){document.getElementById('error').textContent='Max. '+MAX_FOTOS+' Fotos.';return}
+  files.forEach(file=>{if(fotos.length>=MAX_FOTOS)return;compressImg(file).then(b64=>{fotos.push(b64);renderFotos()}).catch(err=>console.error(err))});
+  e.target.value='';
+}
+function compressImg(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const img=new Image();
+      img.onload=function(){
+        const canvas=document.createElement('canvas');
+        let w=img.width,h=img.height;const max=1200;
+        if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max}else{w=Math.round(w*max/h);h=max}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        let q=0.6,result=canvas.toDataURL('image/jpeg',q);
+        while(result.length>400*1370&&q>0.1){q-=0.1;result=canvas.toDataURL('image/jpeg',q)}
+        resolve(result);
+      };
+      img.onerror=reject;img.src=e.target.result;
+    };
+    reader.onerror=reject;reader.readAsDataURL(file);
+  });
+}
+function renderFotos(){
+  document.getElementById('foto-preview').innerHTML=fotos.map((f,i)=>'<div class="foto-thumb"><img src="'+f+'"><button class="foto-del" onclick="fotos.splice('+i+',1);renderFotos()">✕</button></div>').join('');
+  document.getElementById('foto-count').textContent=fotos.length?fotos.length+'/'+MAX_FOTOS+' Fotos':'';
+}
+async function senden(){
+  const err=document.getElementById('error');err.textContent='';
+  if(!selectedOption){err.textContent='Bitte Option auswählen.';return}
+  let nachricht='',status='',extra={};
+  if(selectedOption==='behoben'){nachricht=document.getElementById('txt-behoben').value.trim();if(!nachricht){err.textContent='Bitte Beschreibung eingeben.';return}status='behoben'}
+  else if(selectedOption==='angebot'){nachricht=document.getElementById('txt-angebot').value.trim();const g=document.getElementById('angebot-gesamt').value.trim();if(!nachricht||!g){err.textContent='Beschreibung + Betrag nötig.';return}status='angebot';extra={angebot_material:document.getElementById('angebot-material').value.trim(),angebot_arbeit:document.getElementById('angebot-arbeit').value.trim(),angebot_dauer:document.getElementById('angebot-dauer').value.trim(),angebot_gesamt:g}}
+  else if(selectedOption==='handwerker'){const gw=document.getElementById('hw-gewerk').value;nachricht=document.getElementById('txt-handwerker').value.trim();if(!gw){err.textContent='Bitte Gewerk wählen.';return}if(!nachricht){err.textContent='Bitte Beschreibung eingeben.';return}status='handwerker_noetig';extra={gewerk:gw}}
+  else if(selectedOption==='nachricht'){nachricht=document.getElementById('txt-nachricht').value.trim();if(!nachricht){err.textContent='Bitte Nachricht eingeben.';return}status=subStatus||'info'}
+  const btn=document.getElementById('send-btn');btn.disabled=true;btn.textContent='Wird gesendet…';
+  try{
+    const res=await fetch(NPOINT_URL);if(!res.ok)throw new Error('HTTP '+res.status);
+    const arr=Array.isArray(await res.json())?await(await fetch(NPOINT_URL)).then(r=>r.json()):[];
+    const entry={id:Date.now().toString(),zeit:new Date().toLocaleString('de-DE',{timeZone:'Europe/Berlin'}),von:vonTyp,vonName:hwName||(vonTyp==='mieter'?'Mieter':'Dienstleister'),vonEmail:hwEmail||'',betreff:ticketSubject,ticketCode,nachricht,status,option:selectedOption,zusammenfassung:nachricht.substring(0,100),...extra};
+    if(fotos.length)entry.fotos=fotos;
+    arr.push(entry);
+    const wr=await fetch(NPOINT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr.slice(-30))});
+    if(!wr.ok)throw new Error('Speichern: HTTP '+wr.status);
+    const vd=await(await fetch(NPOINT_URL)).json();
+    if(!Array.isArray(vd)||!vd.some(x=>x.id===entry.id))throw new Error('Verifizierung fehlgeschlagen');
+    document.getElementById('form-view').classList.add('hidden');
+    document.getElementById('success-view').classList.remove('hidden');
+  }catch(e){err.textContent=e.message||'Fehler. Bitte erneut versuchen.';btn.disabled=false;btn.textContent='📤 Rückmeldung absenden'}
+}
+</script>
+</body>
+</html>
