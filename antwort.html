@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rückmeldung – Hausverwaltung</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.08);max-width:520px;width:100%;padding:32px;border:1px solid #d2d2d7}
+.logo{font-size:28px;font-weight:800;text-align:center;margin-bottom:4px;color:#0071e3}
+.sub{text-align:center;color:#86868b;font-size:14px;margin-bottom:24px}
+.ticket-info{background:#f0f0f2;border:1px solid #d2d2d7;border-radius:14px;padding:16px;margin-bottom:24px}
+.ticket-code{font-size:13px;font-weight:700;color:#0071e3;letter-spacing:.05em}
+.ticket-subject{font-size:15px;font-weight:600;margin-top:4px}
+.hw-info{font-size:12px;color:#86868b;margin-top:4px}
+label{display:block;font-size:13px;font-weight:600;color:#86868b;margin-bottom:6px;margin-top:16px}
+select,textarea,input[type=text],input[type=date],input[type=time]{width:100%;padding:14px;border:1px solid #d2d2d7;border-radius:12px;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;background:#fff}
+select:focus,textarea:focus,input:focus{border-color:#0071e3}
+textarea{resize:none;min-height:100px}
+.section-title{font-size:12px;font-weight:700;letter-spacing:.06em;color:#0071e3;text-transform:uppercase;margin:20px 0 10px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.options-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.opt-btn{padding:16px 12px;border:2px solid #d2d2d7;border-radius:14px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;background:#fff;line-height:1.4}
+.opt-btn:hover{border-color:#0071e3;background:#f0f5ff}
+.opt-btn.selected{border-color:#0071e3;background:#e8f0fe;color:#0071e3}
+.opt-btn .opt-icon{font-size:24px;display:block;margin-bottom:6px}
+.opt-btn .opt-label{font-size:11px;color:#86868b;font-weight:400;margin-top:2px}
+.termin-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.foto-area{margin-top:16px}
+.foto-upload-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:2px dashed #d2d2d7;border-radius:14px;background:#fafafa;cursor:pointer;font-size:14px;font-weight:600;color:#86868b;transition:all .15s}
+.foto-upload-btn:hover{border-color:#0071e3;color:#0071e3;background:#f0f5ff}
+.foto-upload-btn input{display:none}
+.foto-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.foto-thumb{position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:1px solid #d2d2d7}
+.foto-thumb img{width:100%;height:100%;object-fit:cover}
+.foto-thumb .foto-del{position:absolute;top:2px;right:2px;width:22px;height:22px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.foto-count{font-size:11px;color:#86868b;margin-top:4px}
+.btn{width:100%;padding:16px;background:#0071e3;border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;margin-top:20px;transition:opacity .2s}
+.btn:hover{opacity:.9}.btn:active{opacity:.7}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.success{text-align:center;padding:40px 20px}
+.success-icon{font-size:64px;margin-bottom:16px}
+.success-title{font-size:22px;font-weight:700;margin-bottom:8px;color:#34c759}
+.success-text{color:#86868b;font-size:14px;line-height:1.6}
+.error{color:#ff3b30;font-size:13px;text-align:center;margin-top:12px;min-height:20px}
+.hidden{display:none}
+.opt-detail{margin-top:16px;padding-top:16px;border-top:1px solid #d2d2d7}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form-view">
+    <div class="logo">Rückmeldung</div>
+    <div class="sub" id="form-sub">Hausverwaltung</div>
+    <div class="ticket-info">
+      <div class="ticket-code" id="display-code">Ticket wird geladen…</div>
+      <div class="ticket-subject" id="display-subject"></div>
+      <div class="hw-info" id="display-hw"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- HANDWERKER / HAUSMEISTER FORMULAR     -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="view-hw" class="hidden">
+      <div class="section-title">Ihre Rückmeldung</div>
+      <div class="options">
+        <div class="opt-btn" onclick="selHW('nicht_erreicht',this)">
+          <span class="opt-icon">📵</span>Mieter nicht erreicht
+          <span class="opt-label">Kein Kontakt möglich</span>
+        </div>
+        <div class="opt-btn" onclick="selHW('termin',this)">
+          <span class="opt-icon">📅</span>Termin vereinbart
+          <span class="opt-label">Datum & Uhrzeit angeben</span>
+        </div>
+        <div class="opt-btn" onclick="selHW('angebot',this)">
+          <span class="opt-icon">💰</span>Angebot
+          <span class="opt-label">Kostenvoranschlag anhängen</span>
+        </div>
+        <div class="opt-btn" onclick="selHW('nachricht',this)">
+          <span class="opt-icon">💬</span>Allgemeine Rückmeldung
+          <span class="opt-label">Sonstige Info</span>
+        </div>
+      </div>
+
+      <!-- Detail: Mieter nicht erreicht -->
+      <div class="opt-detail hidden" id="hw-detail-nicht_erreicht">
+        <label>Wie oft / wann haben Sie es versucht?</label>
+        <textarea id="hw-txt-nicht_erreicht" placeholder="z.B. 2x angerufen am Montag und Dienstag, niemand da…"></textarea>
+      </div>
+
+      <!-- Detail: Termin vereinbart -->
+      <div class="opt-detail hidden" id="hw-detail-termin">
+        <div class="termin-row">
+          <div><label>Datum</label><input type="date" id="hw-termin-datum"></div>
+          <div><label>Uhrzeit</label><input type="time" id="hw-termin-zeit" value="10:00"></div>
+        </div>
+        <label>Anmerkung zum Termin (optional)</label>
+        <textarea id="hw-txt-termin" placeholder="z.B. Mieter ist ab 9 Uhr zu Hause…"></textarea>
+      </div>
+
+      <!-- Detail: Angebot anhängen -->
+      <div class="opt-detail hidden" id="hw-detail-angebot">
+        <label>Kurze Beschreibung</label>
+        <textarea id="hw-txt-angebot" placeholder="Was muss gemacht werden? Geschätzte Kosten?"></textarea>
+        <div style="margin-top:14px">
+          <label>📎 Angebot als Foto hochladen</label>
+          <label class="foto-upload-btn" style="border-color:#0071e3;color:#0071e3">📎 Angebot fotografieren oder auswählen
+            <input type="file" accept="image/*" capture="environment" multiple onchange="handleAngebotFotos(event)">
+          </label>
+          <div class="foto-preview" id="angebot-preview"></div>
+          <div class="foto-count" id="angebot-count"></div>
+        </div>
+      </div>
+
+      <!-- Detail: Allgemeine Rückmeldung -->
+      <div class="opt-detail hidden" id="hw-detail-nachricht">
+        <label>Ihre Nachricht</label>
+        <textarea id="hw-txt-nachricht" placeholder="Ihre Rückmeldung…"></textarea>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- MIETER FORMULAR                       -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="view-mieter" class="hidden">
+      <div class="section-title">Ihre Rückmeldung</div>
+      <div class="options-2">
+        <div class="opt-btn" onclick="selMieter('behoben',this)">
+          <span class="opt-icon">✅</span>Mangel behoben
+          <span class="opt-label">Alles in Ordnung</span>
+        </div>
+        <div class="opt-btn" onclick="selMieter('nachricht',this)">
+          <span class="opt-icon">💬</span>Rückmeldung
+          <span class="opt-label">Nachricht senden</span>
+        </div>
+      </div>
+
+      <!-- Detail: Mangel behoben -->
+      <div class="opt-detail hidden" id="mieter-detail-behoben">
+        <label>Möchten Sie noch etwas mitteilen? (optional)</label>
+        <textarea id="mieter-txt-behoben" placeholder="z.B. Alles bestens, vielen Dank!"></textarea>
+      </div>
+
+      <!-- Detail: Rückmeldung -->
+      <div class="opt-detail hidden" id="mieter-detail-nachricht">
+        <label>Ihre Nachricht</label>
+        <textarea id="mieter-txt-nachricht" placeholder="Was möchten Sie uns mitteilen?"></textarea>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- FOTO-UPLOAD (für beide)               -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="foto-area">
+      <div class="section-title">📷 Fotos (optional, max. 3)</div>
+      <label class="foto-upload-btn">📷 Foto aufnehmen oder auswählen
+        <input type="file" accept="image/*" capture="environment" multiple onchange="handleFotos(event)">
+      </label>
+      <div class="foto-preview" id="foto-preview"></div>
+      <div class="foto-count" id="foto-count"></div>
+    </div>
+
+    <button class="btn" id="send-btn" onclick="senden()">📤 Rückmeldung absenden</button>
+    <div class="error" id="error"></div>
+  </div>
+
+  <!-- ERFOLG -->
+  <div id="success-view" class="hidden">
+    <div class="success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Vielen Dank!</div>
+      <div class="success-text" id="success-text">Ihre Rückmeldung wurde erfolgreich übermittelt.<br>Die Hausverwaltung wurde automatisch informiert.<br><br>Sie können dieses Fenster jetzt schließen.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const NPOINT_URL='https://api.npoint.io/77e4607f511dc4946245';
+const MAX_FOTOS=3;
+
+// URL-Parameter
+const params=new URLSearchParams(window.location.search);
+const ticketCode=params.get('code')||'Unbekannt';
+const ticketSubject=decodeURIComponent(params.get('subject')||'Auftrag');
+const userName=decodeURIComponent(params.get('name')||'');
+const userEmail=decodeURIComponent(params.get('email')||'');
+const vonTyp=params.get('von')||'handwerker';
+
+// UI initialisieren
+document.getElementById('display-code').textContent=ticketCode;
+document.getElementById('display-subject').textContent=ticketSubject;
+document.getElementById('display-hw').textContent=userName?(vonTyp==='mieter'?'Mieter: ':'Dienstleister: ')+userName:'';
+
+// Richtiges Formular anzeigen
+if(vonTyp==='mieter'){
+  document.getElementById('view-mieter').classList.remove('hidden');
+  document.getElementById('form-sub').textContent='Rückmeldung als Mieter';
+}else{
+  document.getElementById('view-hw').classList.remove('hidden');
+  document.getElementById('form-sub').textContent='Rückmeldung als Dienstleister';
+}
+
+// ══ HANDWERKER: Auswahl ══
+let hwOption='';
+function selHW(opt,el){
+  hwOption=opt;
+  document.querySelectorAll('#view-hw .opt-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  ['nicht_erreicht','termin','angebot','nachricht'].forEach(id=>{
+    document.getElementById('hw-detail-'+id).classList.toggle('hidden',id!==opt);
+  });
+}
+
+// ══ MIETER: Auswahl ══
+let mieterOption='';
+function selMieter(opt,el){
+  mieterOption=opt;
+  document.querySelectorAll('#view-mieter .opt-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  ['behoben','nachricht'].forEach(id=>{
+    document.getElementById('mieter-detail-'+id).classList.toggle('hidden',id!==opt);
+  });
+}
+
+// ══ FOTO-UPLOAD ══
+let fotos=[];
+function handleFotos(e){
+  const files=Array.from(e.target.files);
+  if(fotos.length+files.length>MAX_FOTOS){document.getElementById('error').textContent='Max. '+MAX_FOTOS+' Fotos.';return}
+  files.forEach(file=>{
+    if(fotos.length>=MAX_FOTOS)return;
+    compressImg(file).then(b64=>{fotos.push(b64);renderFotos()}).catch(err=>console.error(err));
+  });
+  e.target.value='';
+}
+function compressImg(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const img=new Image();
+      img.onload=function(){
+        const canvas=document.createElement('canvas');
+        let w=img.width,h=img.height;const max=1200;
+        if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max}else{w=Math.round(w*max/h);h=max}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        let q=0.6,result=canvas.toDataURL('image/jpeg',q);
+        while(result.length>400*1370&&q>0.1){q-=0.1;result=canvas.toDataURL('image/jpeg',q)}
+        resolve(result);
+      };
+      img.onerror=reject;img.src=e.target.result;
+    };
+    reader.onerror=reject;reader.readAsDataURL(file);
+  });
+}
+function renderFotos(){
+  document.getElementById('foto-preview').innerHTML=fotos.map((f,i)=>'<div class="foto-thumb"><img src="'+f+'"><button class="foto-del" onclick="fotos.splice('+i+',1);renderFotos()">✕</button></div>').join('');
+  document.getElementById('foto-count').textContent=fotos.length?fotos.length+'/'+MAX_FOTOS+' Fotos':'';
+}
+
+// Separate Angebot-Fotos
+let angebotFotos=[];
+function handleAngebotFotos(e){
+  const files=Array.from(e.target.files);
+  if(angebotFotos.length+files.length>MAX_FOTOS){document.getElementById('error').textContent='Max. '+MAX_FOTOS+' Fotos.';return}
+  files.forEach(file=>{
+    if(angebotFotos.length>=MAX_FOTOS)return;
+    compressImg(file).then(b64=>{angebotFotos.push(b64);renderAngebotFotos()}).catch(err=>console.error(err));
+  });
+  e.target.value='';
+}
+function renderAngebotFotos(){
+  document.getElementById('angebot-preview').innerHTML=angebotFotos.map((f,i)=>'<div class="foto-thumb"><img src="'+f+'"><button class="foto-del" onclick="angebotFotos.splice('+i+',1);renderAngebotFotos()">✕</button></div>').join('');
+  document.getElementById('angebot-count').textContent=angebotFotos.length?angebotFotos.length+'/'+MAX_FOTOS+' Angebot-Fotos':'';
+}
+
+// ══ SENDEN ══
+async function senden(){
+  const err=document.getElementById('error');
+  err.textContent='';
+  let nachricht='',status='',option='',extra={};
+
+  if(vonTyp==='mieter'){
+    // ── MIETER ──
+    if(!mieterOption){err.textContent='Bitte eine Option auswählen.';return}
+
+    if(mieterOption==='behoben'){
+      nachricht=document.getElementById('mieter-txt-behoben').value.trim()||'Mangel behoben bestätigt.';
+      status='behoben';
+      option='behoben';
+    }else if(mieterOption==='nachricht'){
+      nachricht=document.getElementById('mieter-txt-nachricht').value.trim();
+      if(!nachricht){err.textContent='Bitte Nachricht eingeben.';return}
+      status='info';
+      option='nachricht';
+    }
+
+  }else{
+    // ── HANDWERKER / HAUSMEISTER ──
+    if(!hwOption){err.textContent='Bitte eine Option auswählen.';return}
+
+    if(hwOption==='nicht_erreicht'){
+      nachricht=document.getElementById('hw-txt-nicht_erreicht').value.trim();
+      if(!nachricht){err.textContent='Bitte beschreiben Sie Ihre Kontaktversuche.';return}
+      status='nicht_erreicht';
+      option='nicht_erreicht';
+
+    }else if(hwOption==='termin'){
+      const datum=document.getElementById('hw-termin-datum').value;
+      const zeit=document.getElementById('hw-termin-zeit').value||'10:00';
+      if(!datum){err.textContent='Bitte Termin-Datum auswählen.';return}
+      // Datum formatieren DD.MM.YYYY
+      const d=new Date(datum);
+      const datumStr=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+      nachricht='Termin vereinbart: '+datumStr+' um '+zeit+' Uhr';
+      const anmerkung=document.getElementById('hw-txt-termin').value.trim();
+      if(anmerkung) nachricht+='\n'+anmerkung;
+      status='termin';
+      option='termin';
+      extra={termin_datum:datum,termin_zeit:zeit};
+
+    }else if(hwOption==='angebot'){
+      nachricht=document.getElementById('hw-txt-angebot').value.trim();
+      if(!nachricht){err.textContent='Bitte Beschreibung eingeben.';return}
+      status='angebot';
+      option='angebot';
+      if(angebotFotos.length>0) extra={angebot_fotos:angebotFotos};
+
+    }else if(hwOption==='nachricht'){
+      nachricht=document.getElementById('hw-txt-nachricht').value.trim();
+      if(!nachricht){err.textContent='Bitte Nachricht eingeben.';return}
+      status='info';
+      option='nachricht';
+    }
+  }
+
+  const btn=document.getElementById('send-btn');
+  btn.disabled=true;
+  btn.textContent='Wird gesendet…';
+
+  try{
+    // Bestehende Daten laden
+    const res=await fetch(NPOINT_URL);
+    if(!res.ok) throw new Error('Laden fehlgeschlagen: HTTP '+res.status);
+    const existing=await res.json();
+    const arr=Array.isArray(existing)?existing:[];
+
+    // Neuen Eintrag erstellen
+    const entry={
+      id:Date.now().toString(),
+      zeit:new Date().toLocaleString('de-DE',{timeZone:'Europe/Berlin'}),
+      von:vonTyp,
+      vonName:userName||(vonTyp==='mieter'?'Mieter':'Dienstleister'),
+      vonEmail:userEmail||'',
+      betreff:ticketSubject,
+      ticketCode:ticketCode,
+      nachricht:nachricht,
+      status:status,
+      option:option,
+      zusammenfassung:nachricht.substring(0,100),
+      ...extra
+    };
+
+    // Fotos anhängen
+    if(fotos.length>0) entry.fotos=fotos;
+
+    arr.push(entry);
+
+    // Speichern (max 30 Einträge wegen Foto-Größe)
+    const trimmed=arr.slice(-30);
+    const writeRes=await fetch(NPOINT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(trimmed)
+    });
+    if(!writeRes.ok) throw new Error('Speichern fehlgeschlagen: HTTP '+writeRes.status);
+
+    // Verifizierung
+    const verifyRes=await fetch(NPOINT_URL);
+    if(!verifyRes.ok) throw new Error('Verifizierung fehlgeschlagen');
+    const verifyData=await verifyRes.json();
+    if(!Array.isArray(verifyData)||!verifyData.some(x=>x.id===entry.id)){
+      throw new Error('Daten wurden nicht korrekt gespeichert. Bitte erneut versuchen.');
+    }
+
+    // Erfolg
+    document.getElementById('form-view').classList.add('hidden');
+    document.getElementById('success-view').classList.remove('hidden');
+    if(vonTyp==='mieter'&&mieterOption==='behoben'){
+      document.getElementById('success-text').innerHTML='Vielen Dank für Ihre Bestätigung!<br>Wir freuen uns, dass der Mangel behoben wurde.<br><br>Sie können dieses Fenster jetzt schließen.';
+    }
+
+  }catch(e){
+    console.error('❌ Fehler:',e);
+    err.textContent=e.message||'Fehler beim Senden. Bitte erneut versuchen.';
+    btn.disabled=false;
+    btn.textContent='📤 Rückmeldung absenden';
+  }
+}
+</script>
+</body>
+</html>
